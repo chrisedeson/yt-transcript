@@ -95,13 +95,7 @@ export default function Home() {
       </div>
 
       {/* Main card */}
-      <div
-        className="mx-auto px-5 animate-fade-up-delay"
-        style={{
-          maxWidth: aiPanelOpen ? "1280px" : "800px",
-          transition: "max-width 0.3s ease",
-        }}
-      >
+      <div className="max-w-[800px] mx-auto px-5 animate-fade-up-delay">
         <UrlInput
           onSubmit={handleSubmit}
           loading={loading}
@@ -155,9 +149,17 @@ export default function Home() {
             </div>
           </div>
         )}
+      </div>
 
-        {/* Result */}
-        {transcriptData && !loading && (
+      {/* Result - widens when AI panel is open */}
+      {transcriptData && !loading && (
+        <div
+          className="mx-auto px-5"
+          style={{
+            maxWidth: aiPanelOpen ? "1280px" : "800px",
+            transition: "max-width 0.3s ease",
+          }}
+        >
           <TranscriptResult
             transcript={transcriptData.transcript}
             metadata={transcriptData.metadata}
@@ -166,8 +168,8 @@ export default function Home() {
             showToast={showToast}
             onAiPanelChange={setAiPanelOpen}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       <Toast message={toast} />
     </>
