@@ -114,6 +114,12 @@ mark {
 }
 
 /* ── Responsive ── */
+@media (max-width: 900px) {
+  .side-by-side {
+    flex-direction: column !important;
+  }
+}
+
 @media (max-width: 600px) {
   .mobile-stack {
     flex-direction: column;

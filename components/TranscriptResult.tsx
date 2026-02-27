@@ -10,6 +10,7 @@ interface TranscriptResultProps {
   includeTimestamps: boolean;
   onReset: () => void;
   showToast: (msg: string) => void;
+  onAiPanelChange?: (open: boolean) => void;
 }
 
 type ViewMode = "segments" | "text";
@@ -30,11 +31,22 @@ export function TranscriptResult({
   includeTimestamps,
   onReset,
   showToast,
+  onAiPanelChange,
 }: TranscriptResultProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("segments");
   const [subTab, setSubTab] = useState<SubTab>("plain");
   const [searchQuery, setSearchQuery] = useState("");
   const [aiPanel, setAiPanel] = useState<{ title: string; content: string; loading: boolean } | null>(null);
+
+  const openAiPanel = (panel: { title: string; content: string; loading: boolean }) => {
+    setAiPanel(panel);
+    onAiPanelChange?.(true);
+  };
+
+  const closeAiPanel = () => {
+    setAiPanel(null);
+    onAiPanelChange?.(false);
+  };
 
   // Stats
   const stats = useMemo(() => {
@@ -80,7 +92,7 @@ export function TranscriptResult({
   // Spell check
   async function runSpellCheck() {
     const text = transcript.map((s) => s.text).join(" ");
-    setAiPanel({ title: "Spell Check", content: "Checking spelling...", loading: true });
+    openAiPanel({ title: "Spell Check", content: "Checking spelling...", loading: true });
     try {
       const res = await fetch("/api/ai-cleanup", {
         method: "POST",
@@ -103,7 +115,7 @@ export function TranscriptResult({
   // AI Cleanup
   async function runAICleanup() {
     const text = transcript.map((s) => s.text).join(" ");
-    setAiPanel({ title: "AI Cleanup", content: "Cleaning up transcript...", loading: true });
+    openAiPanel({ title: "AI Cleanup", content: "Cleaning up transcript...", loading: true });
     try {
       const res = await fetch("/api/ai-cleanup", {
         method: "POST",
@@ -120,7 +132,7 @@ export function TranscriptResult({
   // Summarize
   async function runSummary() {
     const text = transcript.map((s) => s.text).join(" ");
-    setAiPanel({ title: "AI Summary", content: "Generating summary...", loading: true });
+    openAiPanel({ title: "AI Summary", content: "Generating summary...", loading: true });
     try {
       const res = await fetch("/api/ai-cleanup", {
         method: "POST",
@@ -229,156 +241,15 @@ export function TranscriptResult({
         <ActionButton icon="↺" label="Reset" onClick={onReset} style={{ marginLeft: "auto" }} />
       </div>
 
-      {/* AI panel */}
-      {aiPanel && (
-        <div
-          style={{
-            background: "var(--color-bg-secondary)",
-            border: "1px solid rgba(124,58,237,0.3)",
-            borderRadius: "10px",
-            padding: "18px",
-            marginBottom: "14px",
-            animation: "fadeUp 0.3s ease",
-          }}
-        >
-          <div className="flex items-center justify-between mb-3.5">
-            <div className="text-[13px] font-semibold flex items-center gap-1.5" style={{ color: "var(--color-accent-light)" }}>
-              {aiPanel.title === "AI Cleanup" ? "✨" : aiPanel.title === "AI Summary" ? "📝" : "🔤"} {aiPanel.title}
-            </div>
-            <button
-              onClick={() => setAiPanel(null)}
-              className="text-text-tertiary text-lg cursor-pointer border-none bg-transparent leading-none"
-              style={{ transition: "color 0.15s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-text-primary)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-tertiary)"; }}
-            >
-              &#10005;
-            </button>
-          </div>
-          <div
-            className="text-[14px] leading-7 whitespace-pre-wrap"
-            style={{
-              color: aiPanel.loading ? "var(--color-text-secondary)" : "var(--color-text-primary)",
-              fontStyle: aiPanel.loading ? "italic" : "normal",
-              maxHeight: "400px",
-              overflowY: "auto",
-            }}
-          >
-            {aiPanel.content}
-          </div>
-        </div>
-      )}
-
-      {/* View tabs + search */}
-      <div className="flex items-center justify-between mb-3.5 flex-wrap gap-2.5">
-        <div
-          className="flex gap-0.5"
-          style={{
-            background: "var(--color-bg-secondary)",
-            border: "1px solid var(--color-border-default)",
-            borderRadius: "8px",
-            padding: "3px",
-          }}
-        >
-          <TabButton active={viewMode === "segments"} onClick={() => setViewMode("segments")}>
-            Segments
-          </TabButton>
-          <TabButton active={viewMode === "text"} onClick={() => setViewMode("text")}>
-            View as Text
-          </TabButton>
-        </div>
-
-        {/* Search */}
-        <div className="relative flex-1 max-w-[280px]">
-          <span
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary text-[14px] pointer-events-none"
-          >
-            🔍
-          </span>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search transcript..."
-            className="w-full outline-none"
-            style={{
-              background: "var(--color-bg-secondary)",
-              border: "1px solid var(--color-border-default)",
-              borderRadius: "8px",
-              color: "var(--color-text-primary)",
-              fontFamily: "'Outfit', sans-serif",
-              fontSize: "13px",
-              padding: "8px 12px 8px 34px",
-              transition: "border-color 0.15s",
-            }}
-            onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-accent-primary)"; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-border-default)"; }}
-          />
-        </div>
-      </div>
-
-      {/* Segments view */}
-      {viewMode === "segments" && (
-        <div
-          style={{
-            background: "var(--color-bg-secondary)",
-            border: "1px solid var(--color-border-default)",
-            borderRadius: "10px",
-            overflow: "hidden",
-            maxHeight: "500px",
-            overflowY: "auto",
-          }}
-        >
-          {filteredSegments.length === 0 ? (
-            <div className="text-center py-10 text-text-tertiary text-[14px]">
-              {searchQuery ? `No results for "${searchQuery}"` : "No segments found."}
-            </div>
-          ) : (
-            filteredSegments.map((seg, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3.5"
-                style={{
-                  padding: "12px 18px",
-                  borderBottom: i < filteredSegments.length - 1 ? "1px solid var(--color-border-default)" : "none",
-                  transition: "background 0.1s",
-                  background: searchQuery && seg.text.toLowerCase().includes(searchQuery.toLowerCase()) ? "rgba(124,58,237,0.1)" : "transparent",
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-bg-tertiary)"; }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background =
-                    searchQuery && seg.text.toLowerCase().includes(searchQuery.toLowerCase())
-                      ? "rgba(124,58,237,0.1)"
-                      : "transparent";
-                }}
-              >
-                {includeTimestamps && (
-                  <span
-                    className="select-none pt-0.5"
-                    style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: "11px",
-                      color: "var(--color-accent-primary)",
-                      minWidth: "38px",
-                    }}
-                  >
-                    {formatTime(seg.start)}
-                  </span>
-                )}
-                <span className="text-[14px] leading-[1.65]">
-                  {highlightText(seg.text, searchQuery)}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* Text view */}
-      {viewMode === "text" && (
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            {/* Sub tabs */}
+      {/* Side-by-side layout: transcript left, AI panel right */}
+      <div
+        className="flex gap-4 side-by-side"
+        style={{ flexDirection: aiPanel ? "row" : "column" }}
+      >
+        {/* Left: transcript content */}
+        <div style={{ flex: aiPanel ? "1 1 50%" : "1 1 100%", minWidth: 0 }}>
+          {/* View tabs + search */}
+          <div className="flex items-center justify-between mb-3.5 flex-wrap gap-2.5">
             <div
               className="flex gap-0.5"
               style={{
@@ -388,38 +259,190 @@ export function TranscriptResult({
                 padding: "3px",
               }}
             >
-              <SubTabButton active={subTab === "plain"} onClick={() => setSubTab("plain")}>Plain Text</SubTabButton>
-              <SubTabButton active={subTab === "markdown"} onClick={() => setSubTab("markdown")}>Markdown</SubTabButton>
-              <SubTabButton active={subTab === "srt"} onClick={() => setSubTab("srt")}>SRT</SubTabButton>
+              <TabButton active={viewMode === "segments"} onClick={() => setViewMode("segments")}>
+                Segments
+              </TabButton>
+              <TabButton active={viewMode === "text"} onClick={() => setViewMode("text")}>
+                View as Text
+              </TabButton>
             </div>
 
-            {/* Export buttons */}
-            <div className="flex gap-2">
-              <SmallButton onClick={copyText}>📋 Copy Text</SmallButton>
-              <SmallButton onClick={downloadText}>⬇ Download</SmallButton>
+            {/* Search */}
+            <div className="relative flex-1 max-w-[280px]">
+              <span
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-tertiary text-[14px] pointer-events-none"
+              >
+                🔍
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search transcript..."
+                className="w-full outline-none"
+                style={{
+                  background: "var(--color-bg-secondary)",
+                  border: "1px solid var(--color-border-default)",
+                  borderRadius: "8px",
+                  color: "var(--color-text-primary)",
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: "13px",
+                  padding: "8px 12px 8px 34px",
+                  transition: "border-color 0.15s",
+                }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "var(--color-accent-primary)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--color-border-default)"; }}
+              />
             </div>
           </div>
 
+          {/* Segments view */}
+          {viewMode === "segments" && (
+            <div
+              style={{
+                background: "var(--color-bg-secondary)",
+                border: "1px solid var(--color-border-default)",
+                borderRadius: "10px",
+                overflow: "hidden",
+                maxHeight: "500px",
+                overflowY: "auto",
+              }}
+            >
+              {filteredSegments.length === 0 ? (
+                <div className="text-center py-10 text-text-tertiary text-[14px]">
+                  {searchQuery ? `No results for "${searchQuery}"` : "No segments found."}
+                </div>
+              ) : (
+                filteredSegments.map((seg, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3.5"
+                    style={{
+                      padding: "12px 18px",
+                      borderBottom: i < filteredSegments.length - 1 ? "1px solid var(--color-border-default)" : "none",
+                      transition: "background 0.1s",
+                      background: searchQuery && seg.text.toLowerCase().includes(searchQuery.toLowerCase()) ? "rgba(124,58,237,0.1)" : "transparent",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--color-bg-tertiary)"; }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background =
+                        searchQuery && seg.text.toLowerCase().includes(searchQuery.toLowerCase())
+                          ? "rgba(124,58,237,0.1)"
+                          : "transparent";
+                    }}
+                  >
+                    {includeTimestamps && (
+                      <span
+                        className="select-none pt-0.5"
+                        style={{
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: "11px",
+                          color: "var(--color-accent-primary)",
+                          minWidth: "38px",
+                        }}
+                      >
+                        {formatTime(seg.start)}
+                      </span>
+                    )}
+                    <span className="text-[14px] leading-[1.65]">
+                      {highlightText(seg.text, searchQuery)}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Text view */}
+          {viewMode === "text" && (
+            <div>
+              <div className="flex items-center justify-between mb-2.5">
+                {/* Sub tabs */}
+                <div
+                  className="flex gap-0.5"
+                  style={{
+                    background: "var(--color-bg-secondary)",
+                    border: "1px solid var(--color-border-default)",
+                    borderRadius: "8px",
+                    padding: "3px",
+                  }}
+                >
+                  <SubTabButton active={subTab === "plain"} onClick={() => setSubTab("plain")}>Plain Text</SubTabButton>
+                  <SubTabButton active={subTab === "markdown"} onClick={() => setSubTab("markdown")}>Markdown</SubTabButton>
+                  <SubTabButton active={subTab === "srt"} onClick={() => setSubTab("srt")}>SRT</SubTabButton>
+                </div>
+
+                {/* Export buttons */}
+                <div className="flex gap-2">
+                  <SmallButton onClick={copyText}>📋 Copy Text</SmallButton>
+                  <SmallButton onClick={downloadText}>⬇ Download</SmallButton>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "var(--color-bg-secondary)",
+                  border: "1px solid var(--color-border-default)",
+                  borderRadius: "10px",
+                  color: "var(--color-text-primary)",
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "12.5px",
+                  lineHeight: "1.75",
+                  padding: "18px",
+                  height: "380px",
+                  resize: "vertical" as const,
+                  overflowY: "auto" as const,
+                  whiteSpace: "pre-wrap" as const,
+                }}
+              >
+                {textContent}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right: AI panel (only when active) */}
+        {aiPanel && (
           <div
             style={{
+              flex: "1 1 50%",
+              minWidth: 0,
               background: "var(--color-bg-secondary)",
-              border: "1px solid var(--color-border-default)",
+              border: "1px solid rgba(124,58,237,0.3)",
               borderRadius: "10px",
-              color: "var(--color-text-primary)",
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: "12.5px",
-              lineHeight: "1.75",
               padding: "18px",
-              height: "380px",
-              resize: "vertical" as const,
-              overflowY: "auto" as const,
-              whiteSpace: "pre-wrap" as const,
+              animation: "fadeUp 0.3s ease",
+              display: "flex",
+              flexDirection: "column",
+              maxHeight: "560px",
             }}
           >
-            {textContent}
+            <div className="flex items-center justify-between mb-3.5 flex-shrink-0">
+              <div className="text-[13px] font-semibold flex items-center gap-1.5" style={{ color: "var(--color-accent-light)" }}>
+                {aiPanel.title === "AI Cleanup" ? "✨" : aiPanel.title === "AI Summary" ? "📝" : "🔤"} {aiPanel.title}
+              </div>
+              <button
+                onClick={closeAiPanel}
+                className="text-text-tertiary text-lg cursor-pointer border-none bg-transparent leading-none"
+                style={{ transition: "color 0.15s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--color-text-primary)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "var(--color-text-tertiary)"; }}
+              >
+                &#10005;
+              </button>
+            </div>
+            <div
+              className="text-[14px] leading-7 whitespace-pre-wrap flex-1 overflow-y-auto"
+              style={{
+                color: aiPanel.loading ? "var(--color-text-secondary)" : "var(--color-text-primary)",
+                fontStyle: aiPanel.loading ? "italic" : "normal",
+              }}
+            >
+              {aiPanel.content}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Footer stats */}
       <div className="flex items-center justify-between mt-2.5 px-0.5">

@@ -21,6 +21,7 @@ export default function Home() {
   const [lastVideoId, setLastVideoId] = useState<string | null>(null);
 
   const [toast, setToast] = useState<string | null>(null);
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -94,7 +95,13 @@ export default function Home() {
       </div>
 
       {/* Main card */}
-      <div className="max-w-[800px] mx-auto px-5 animate-fade-up-delay">
+      <div
+        className="mx-auto px-5 animate-fade-up-delay"
+        style={{
+          maxWidth: aiPanelOpen ? "1280px" : "800px",
+          transition: "max-width 0.3s ease",
+        }}
+      >
         <UrlInput
           onSubmit={handleSubmit}
           loading={loading}
@@ -157,6 +164,7 @@ export default function Home() {
             includeTimestamps={includeTimestamps}
             onReset={handleReset}
             showToast={showToast}
+            onAiPanelChange={setAiPanelOpen}
           />
         )}
       </div>
