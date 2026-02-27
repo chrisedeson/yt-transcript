@@ -1,37 +1,141 @@
 @import "tailwindcss";
 
 /*
- * Linear-inspired dark theme
- * Design system: dark backgrounds, subtle borders, purple/blue accents
+ * YouTube Transcript Tool - Dark theme
+ * Design: Dark backgrounds, subtle borders, purple accents
+ * Font: Outfit (body) + JetBrains Mono (code/timestamps)
  */
 @theme {
-  --color-bg-primary: #0a0a0f;
-  --color-bg-secondary: #12121a;
-  --color-bg-tertiary: #1a1a2e;
-  --color-bg-hover: #1f1f35;
-  --color-border-default: #2a2a3e;
-  --color-border-subtle: #1e1e30;
-  --color-text-primary: #e8e8ed;
-  --color-text-secondary: #8b8b9e;
-  --color-text-tertiary: #5c5c72;
-  --color-accent-primary: #8b5cf6;
-  --color-accent-secondary: #6366f1;
-  --color-accent-hover: #7c3aed;
-  --color-accent-subtle: rgba(139, 92, 246, 0.1);
+  --color-bg-primary: #0d0d0d;
+  --color-bg-secondary: #161616;
+  --color-bg-tertiary: #1f1f1f;
+  --color-bg-hover: #282828;
+  --color-border-default: #2a2a2a;
+  --color-border-subtle: #353535;
+  --color-text-primary: #f0f0f0;
+  --color-text-secondary: #a0a0a0;
+  --color-text-tertiary: #606060;
+  --color-accent-primary: #7c3aed;
+  --color-accent-light: #9d65f5;
+  --color-accent-hover: #8b5cf6;
+  --color-accent-glow: rgba(124, 58, 237, 0.18);
+  --color-accent-dim: #4c1d95;
   --color-success: #22c55e;
   --color-error: #ef4444;
-  --color-warning: #f59e0b;
+  --color-warning: #eab308;
+}
+
+html {
+  background-color: #0d0d0d;
+  scroll-behavior: smooth;
 }
 
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-family: var(--font-geist-sans, system-ui, -apple-system, sans-serif);
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  padding-bottom: 80px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Prevent flash of white background during theme load */
-html {
-  background-color: #0a0a0f;
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--color-border-subtle); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-accent-primary); }
+
+/* ── Animations ── */
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-fade-down {
+  animation: fadeDown 0.6s ease both;
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.6s ease both;
+}
+
+.animate-fade-up-delay {
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.animate-pulsing {
+  animation: pulse 1.2s ease infinite;
+}
+
+/* ── Touch target minimum (44px) ── */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ── Toggle switch ── */
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--color-bg-hover);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* ── Spell check highlights ── */
+.spell-underline {
+  text-decoration: underline wavy #ef4444;
+  cursor: help;
+}
+
+/* ── Search highlight ── */
+mark {
+  background: rgba(234, 179, 8, 0.35);
+  color: var(--color-text-primary);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .mobile-stack {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .mobile-full {
+    max-width: 100%;
+    width: 100%;
+  }
 }
