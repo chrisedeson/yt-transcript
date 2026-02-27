@@ -18,23 +18,3 @@ A free web app that pulls clean, formatted transcripts from any YouTube video. P
 ## Tech
 
 Next.js 16, TypeScript, Tailwind v4, Gemini + OpenAI APIs
-
-## Run locally
-
-```bash
-npm install
-```
-
-Create a `.env.local` with your API keys:
-
-```
-YOUTUBE_TRANSCRIPT_API_KEY=your_key
-GEMINI_API_KEY=your_key
-OPENAI_API_KEY=your_key
-```
-
-```bash
-npm run dev
-```
-
-Open [localhost:3000](http://localhost:3000).
