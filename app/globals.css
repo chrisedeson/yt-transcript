@@ -99,20 +99,6 @@ body {
   border: 1px solid var(--color-border-subtle);
 }
 
-.toggle-track::after {
-  content: '';
-  position: absolute;
-  left: 3px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 18px;
-  height: 18px;
-  background: #fff;
-  border-radius: 50%;
-  transition: transform 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-}
-
 /* ── Spell check highlights ── */
 .spell-underline {
   text-decoration: underline wavy #ef4444;
