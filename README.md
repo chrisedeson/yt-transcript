@@ -1,6 +1,6 @@
 # YouTube Transcript Tool
 
-![Preview](assets/screenshot-hero.png)
+![Preview](public/screenshot-hero.png)
 
 A free web app that pulls clean, formatted transcripts from any YouTube video. Paste a link, hit the button, and get your transcript.
 

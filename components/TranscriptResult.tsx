@@ -102,7 +102,7 @@ export function TranscriptResult({
 
   // AI Cleanup
   async function runAICleanup() {
-    const text = transcript.slice(0, 80).map((s) => s.text).join(" ");
+    const text = transcript.map((s) => s.text).join(" ");
     setAiPanel({ title: "AI Cleanup", content: "Cleaning up transcript...", loading: true });
     try {
       const res = await fetch("/api/ai-cleanup", {
@@ -260,6 +260,8 @@ export function TranscriptResult({
             style={{
               color: aiPanel.loading ? "var(--color-text-secondary)" : "var(--color-text-primary)",
               fontStyle: aiPanel.loading ? "italic" : "normal",
+              maxHeight: "400px",
+              overflowY: "auto",
             }}
           >
             {aiPanel.content}
